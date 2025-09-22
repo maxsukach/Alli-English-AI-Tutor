@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@react-stately/utils": "^3.10.8",
+    "@tailwindcss/typography": "^0.5.18",
     "@untitledui/icons": "^0.0.19",
     "next": "15.5.3",
     "react": "19.1.0",

@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { Mail01 } from "@untitledui/icons";
-import { PaginationLine } from "@/components/application/pagination/pagination-line";
-import { Button } from "@/components/base/buttons/button";
-import { Form } from "@/components/base/form/form";
-import { Input } from "@/components/base/input/input";
-import { UntitledLogo } from "@/components/foundations/logo/untitledui-logo";
-import { UntitledLogoMinimal } from "@/components/foundations/logo/untitledui-logo-minimal";
-import { BackgroundPattern } from "@/components/shared-assets/background-patterns";
+import { PaginationLine } from "@/components/ui/application/pagination/pagination-line";
+import { Button } from "@/components/ui/base/buttons/button";
+import { Form } from "@/components/ui/base/form/form";
+import { Input } from "@/components/ui/base/input/input";
+import { UntitledLogo } from "@/components/ui/foundations/logo/untitledui-logo";
+import { UntitledLogoMinimal } from "@/components/ui/foundations/logo/untitledui-logo-minimal";
+import { BackgroundPattern } from "@/components/ui/shared-assets/background-patterns";
 import { ProgressIconsWithText } from "./progress-steps";
 
 export const SignupSidebarProgress02 = () => {

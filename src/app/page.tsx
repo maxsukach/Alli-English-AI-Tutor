@@ -1,4 +1,5 @@
 import Image from "next/image";
+import SignupDemoClient from "@/components/untitled/SignupDemoClient";
 
 export default function Home() {
   return (
@@ -51,6 +52,10 @@ export default function Home() {
           </a>
         </div>
       </main>
+      {/* Demo: Untitled UI signup example */}
+      <div className="w-full">
+        <SignupDemoClient />
+      </div>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
