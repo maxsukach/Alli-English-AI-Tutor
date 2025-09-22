@@ -1,0 +1,22 @@
+{
+  "name": "visionary-codespace",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "postCreateCommand": "corepack enable && npm i -g pnpm && pnpm -v",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-typescript-next",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  },
+  "portsAttributes": {
+    "3000": { "label": "Next.js", "onAutoForward": "openBrowser" },
+    "6006": { "label": "Storybook", "onAutoForward": "ignore" }
+  }
+}
