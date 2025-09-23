@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
+import ThemeProviderClient from "@/components/untitled/ThemeProviderClient";
+import ThemeToggle from "@/components/untitled/ThemeToggle";
+import Link from "next/link";
+import { PostHogClient } from "@/components/providers/PostHogClient";
+import { SessionProvider } from "next-auth/react";
+import type { ReactNode } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,14 +26,31 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <SessionProvider>
+          <ThemeProviderClient>
+            <PostHogClient />
+            <header className="w-full border-b">
+              <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Link href="/" className="font-semibold text-lg">
+                    Alli English AI Tutor
+                  </Link>
+                </div>
+                <div>
+                  {/* Theme toggle runs on client and writes localStorage / toggles .dark-mode */}
+                  <ThemeToggle />
+                </div>
+              </div>
+            </header>
+
+            <main>{children}</main>
+          </ThemeProviderClient>
+        </SessionProvider>
       </body>
     </html>
   );

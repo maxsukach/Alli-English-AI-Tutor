@@ -78,14 +78,14 @@ export const formatCardNumber = (number: string) => {
     return cleaned;
 };
 
-interface PaymentInputProps extends Omit<InputBaseProps, "icon"> {}
+type PaymentInputProps = Omit<InputBaseProps, "icon">;
 
 export const PaymentInput = ({ onChange, value, defaultValue, className, maxLength = 19, label, hint, ...props }: PaymentInputProps) => {
-    const [cardNumber, setCardNumber] = useControlledState(value, defaultValue || "", (value) => {
+    const [cardNumber, setCardNumber] = useControlledState(value, defaultValue || "", (val) => {
         // Remove all non-numeric characters
-        value = value.replace(/\D/g, "");
+        const cleaned = val.replace(/\D/g, "");
 
-        onChange?.(value || "");
+        onChange?.(cleaned || "");
     });
 
     const card = detectCardType(cardNumber);
