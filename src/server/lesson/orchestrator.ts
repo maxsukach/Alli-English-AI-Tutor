@@ -95,17 +95,44 @@ export class LessonOrchestrator {
       performanceDelta: adaptiveDecision.decision.delta,
     });
 
-    await this.analytics.record(profileId, [
+    const analyticsEvents: Array<{
+      name: string;
+      lessonId: string;
+      props: Record<string, unknown>;
+    }> = [
       {
         name: "lesson_turn",
+        lessonId: plan.lessonId,
         props: {
-          lessonId: plan.lessonId,
           stageId: activeStage.id,
           decision: adaptiveDecision.decision.action,
           policyViolations: policyViolations.map((violation) => violation.code),
         },
       },
-    ]);
+      {
+        name: "feedback_emitted",
+        lessonId: plan.lessonId,
+        props: {
+          stageId: activeStage.id,
+          errorCount: feedback.feedback.errors.length,
+          recommendationCount: feedback.feedback.recommendations.length,
+        },
+      },
+    ];
+
+    if (!adaptiveDecision.nextTask) {
+      analyticsEvents.push({
+        name: "lesson_completed",
+        lessonId: plan.lessonId,
+        props: {
+          policyViolations: policyViolations.map((violation) => violation.code),
+          stageId: activeStage.id,
+          decision: adaptiveDecision.decision.action,
+        },
+      });
+    }
+
+    await this.analytics.record(profileId, analyticsEvents);
 
     return {
       plan,

@@ -38,6 +38,13 @@ enum TaskKind {
   EXTENSION
 }
 
+enum EntitlementStatus {
+  ACTIVE
+  TRIAL
+  PAST_DUE
+  CANCELED
+}
+
 model Profile {
   id             String         @id @default(cuid())
   userId         String         @unique
@@ -57,6 +64,7 @@ model Profile {
   abilities      AdaptiveAbility[]
   media          Media[]
   events         Event[]
+  entitlements   Entitlement[]
 
   @@index([cefrRange])
 }
@@ -243,6 +251,27 @@ model Media {
   profile    Profile?   @relation(fields: [profileId], references: [id])
 
   @@index([profileId, createdAt])
+}
+
+model Entitlement {
+  id                   String             @id @default(cuid())
+  profileId            String
+  plan                 String
+  status               EntitlementStatus  @default(ACTIVE)
+  quotaLessons         Int?
+  lessonsUsed          Int                @default(0)
+  renewsAt             DateTime?
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  metadata             Json?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@index([profileId])
+  @@index([stripeSubscriptionId])
+  @@unique([profileId, plan])
 }
 
 model DeploymentLog {

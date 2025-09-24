@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { LessonPlanContract, OrchestratorResult } from "@/server/lesson/contracts";
+import type { BillingGateResult } from "@/lib/billing";
 
 type ProfileSummary = {
   id: string;
@@ -13,10 +14,15 @@ type ProfileSummary = {
 };
 
 type StartLessonResponse = {
-  plan: LessonPlanContract;
+  plan: LessonPlanContract | null;
   profile: ProfileSummary;
   isDemo: boolean;
   supabaseUserId?: string | null;
+  billing: BillingGateResult;
+  error?: {
+    code: string;
+    message: string;
+  };
 };
 
 type LessonTurnResponse = {
@@ -48,6 +54,7 @@ export function LessonPlayground() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDemo, setIsDemo] = useState<boolean>(true);
+  const [billing, setBilling] = useState<BillingGateResult | null>(null);
 
   useEffect(() => {
     startLesson();
@@ -62,12 +69,21 @@ export function LessonPlayground() {
       const response = await postJson<StartLessonResponse>("/api/lesson/start", {
         preferredTopics: ["travel_a2"],
       });
-      setPlan(response.plan);
-      setCurrentStageId(response.plan.stages[0]?.id ?? null);
-      setResult(null);
-      setTranscript("");
+      if (response.error || !response.plan) {
+        setPlan(null);
+        setCurrentStageId(null);
+        setResult(null);
+        setError(response.error?.message ?? "Unable to start lesson");
+      } else {
+        setPlan(response.plan);
+        setCurrentStageId(response.plan.stages[0]?.id ?? null);
+        setResult(null);
+        setTranscript("");
+        setError(null);
+      }
       setProfile({ ...response.profile, isDemo: response.isDemo, supabaseUserId: response.supabaseUserId });
       setIsDemo(response.isDemo);
+      setBilling(response.billing ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -96,6 +112,7 @@ export function LessonPlayground() {
       setTranscript("");
       setProfile({ ...turnResponse.profile, isDemo: turnResponse.isDemo, supabaseUserId: turnResponse.supabaseUserId });
       setIsDemo(turnResponse.isDemo);
+      setBilling((prev) => prev);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -116,6 +133,11 @@ export function LessonPlayground() {
               </span>
               <span>CEFR: {profile.cefrRange ?? "unknown"} · Mode: {isDemo ? "Demo" : "Supabase"}</span>
               {profile.supabaseUserId && <span>Supabase UID: {profile.supabaseUserId}</span>}
+              {billing && (
+                <span>
+                  Billing: {billing.plan ?? "dev"} · Remaining lessons: {billing.remaining ?? "∞"}
+                </span>
+              )}
             </div>
           </div>
         )}

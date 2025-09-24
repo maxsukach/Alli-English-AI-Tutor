@@ -36,8 +36,23 @@ async function main() {
     },
   });
 
-  const lessonPlan = await prisma.lessonPlan.create({
-    data: {
+  const lessonPlan = await prisma.lessonPlan.upsert({
+    where: { lessonId: "seed-lesson-1" },
+    update: {
+      plan: {
+        cefr: "A2",
+        targets: [
+          { type: "structure", id: "past_simple_neg" },
+          { type: "vocab", id: "travel_a2" },
+        ],
+        stages: [
+          { id: "warmup", kind: "dialogue" },
+          { id: "task", kind: "roleplay" },
+          { id: "feedback", kind: "formative" },
+        ],
+      },
+    },
+    create: {
       lessonId: "seed-lesson-1",
       userId: profile.id,
       plan: {
@@ -79,8 +94,16 @@ async function main() {
     },
   });
 
-  await prisma.errorLog.create({
-    data: {
+  await prisma.errorLog.upsert({
+    where: { id: "seed-error-1" },
+    update: {
+      profileId: profile.id,
+      lessonRunId: lessonRun.id,
+      snippet: "I don't went",
+      correction: "I didn't go",
+    },
+    create: {
+      id: "seed-error-1",
       profileId: profile.id,
       lessonRunId: lessonRun.id,
       errorType: "GRAM",
@@ -113,8 +136,17 @@ async function main() {
     },
   });
 
-  await prisma.event.create({
-    data: {
+  await prisma.event.upsert({
+    where: { id: "seed-event-1" },
+    update: {
+      profileId: profile.id,
+      props: {
+        lessonId: lessonRun.lessonId,
+        kbDocId: kbDoc.id,
+      },
+    },
+    create: {
+      id: "seed-event-1",
       profileId: profile.id,
       eventName: "lesson_seeded",
       props: {
@@ -124,13 +156,44 @@ async function main() {
     },
   });
 
-  await prisma.media.create({
-    data: {
+  await prisma.media.upsert({
+    where: { id: "seed-media-1" },
+    update: {
+      profileId: profile.id,
+      lessonRunId: lessonRun.id,
+      uri: "https://example.com/audio.wav",
+      metadata: { duration_ms: 12000 },
+    },
+    create: {
+      id: "seed-media-1",
       profileId: profile.id,
       lessonRunId: lessonRun.id,
       kind: "AUDIO",
       uri: "https://example.com/audio.wav",
       metadata: { duration_ms: 12000 },
+    },
+  });
+
+  await prisma.entitlement.upsert({
+    where: {
+      profileId_plan: {
+        profileId: profile.id,
+        plan: "demo_pro",
+      },
+    },
+    update: {
+      quotaLessons: 100,
+    },
+    create: {
+      profileId: profile.id,
+      plan: "demo_pro",
+      status: "ACTIVE",
+      quotaLessons: 100,
+      lessonsUsed: 1,
+      renewsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      metadata: {
+        source: "seed",
+      },
     },
   });
 }
