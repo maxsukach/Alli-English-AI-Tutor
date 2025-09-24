@@ -22,7 +22,7 @@
     "@untitledui/icons": "^0.0.19",
     "@untitledui/react": "npm:untitledui-react@0.0.7",
     "next": "15.5.3",
-    "next-auth": "^4.24.11",
+    "next-auth": "5.0.0-beta.29",
     "posthog-js": "^1.268.1",
     "react": "19.1.0",
     "react-aria-components": "^1.12.2",
@@ -34,6 +34,7 @@
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.1",
     "@eslint/eslintrc": "^3",
+    "@eslint/js": "^9.36.0",
     "@storybook/addon-a11y": "^9.1.7",
     "@storybook/addon-docs": "^9.1.7",
     "@storybook/addon-onboarding": "^9.1.7",
@@ -52,6 +53,7 @@
     "storybook": "^9.1.7",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "typescript-eslint": "^8.44.1",
     "vitest": "^3.2.4"
   }
 }

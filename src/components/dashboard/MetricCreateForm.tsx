@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { addMetric, addMetricInitialState, type MetricFormState } from "@/app/actions";
+import { addMetric } from "@/app/actions";
+import { addMetricInitialState, type MetricFormState } from "@/app/actions/metric-form";
 import { Form } from "@/components/ui/base/form/form";
 import { Input } from "@/components/ui/base/input/input";
 import { Button } from "@/components/ui/base/buttons/button";

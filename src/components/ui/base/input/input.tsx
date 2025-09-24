@@ -1,6 +1,14 @@
 "use client";
 
-import { type ComponentType, type HTMLAttributes, type ReactNode, type Ref, createContext, useContext } from "react";
+import {
+    type ComponentType,
+    type HTMLAttributes,
+    type InputHTMLAttributes,
+    type ReactNode,
+    type Ref,
+    createContext,
+    useContext,
+} from "react";
 import { HelpCircle, InfoCircle } from "@untitledui/icons";
 import type { InputProps as AriaInputProps, TextFieldProps as AriaTextFieldProps } from "react-aria-components";
 import { Group as AriaGroup, Input as AriaInput, TextField as AriaTextField } from "react-aria-components";
@@ -9,7 +17,9 @@ import { Label } from "@/components/ui/base/input/label";
 import { Tooltip, TooltipTrigger } from "@/components/ui/base/tooltip/tooltip";
 import { cx, sortCx } from "@/utils/cx";
 
-export interface InputBaseProps extends TextFieldProps {
+type NativeInputProps = Pick<InputHTMLAttributes<HTMLInputElement>, "min" | "max" | "step" | "pattern" | "inputMode">;
+
+export interface InputBaseProps extends TextFieldProps, NativeInputProps {
     /** Tooltip message on hover. */
     tooltip?: string;
     /**
@@ -259,6 +269,7 @@ export const Input = ({
                             wrapperClassName,
                             tooltipClassName,
                             tooltip,
+                            ...props,
                         }}
                     />
 

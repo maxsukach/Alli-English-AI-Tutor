@@ -6,7 +6,7 @@ import ThemeToggle from "@/components/untitled/ThemeToggle";
 import Link from "next/link";
 import { PostHogClient } from "@/components/providers/PostHogClient";
 import { SessionProvider } from "next-auth/react";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +33,9 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SessionProvider>
           <ThemeProviderClient>
-            <PostHogClient />
+            <Suspense fallback={null}>
+              <PostHogClient />
+            </Suspense>
             <header className="w-full border-b">
               <div className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">

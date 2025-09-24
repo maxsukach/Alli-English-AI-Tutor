@@ -2,13 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
-
-export type MetricFormState = {
-  status: "idle" | "success" | "error";
-  message?: string;
-};
-
-export const addMetricInitialState: MetricFormState = { status: "idle" };
+import type { MetricFormState } from "./actions/metric-form";
 
 export async function addMetric(
   _prevState: MetricFormState,

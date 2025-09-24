@@ -1,12 +1,16 @@
-// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import js from "@eslint/js";
+import ts from "typescript-eslint";
 import storybook from "eslint-plugin-storybook";
-
+import { FlatCompat } from "@eslint/eslintrc";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
 
 const nodeGlobals = {
   __dirname: "readonly",
@@ -17,40 +21,32 @@ const nodeGlobals = {
   process: "readonly",
 };
 
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+const typescriptConfigs = ts.configs.recommended.map((config) => ({
+  ...config,
+  files: ["**/*.{ts,tsx}", "**/*.mts"],
+}));
 
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+const config = [
   {
     ignores: [
-      "node_modules/**",
       ".next/**",
+      "node_modules/**",
       "out/**",
       "build/**",
       "next-env.d.ts",
       "src/generated/prisma/**",
     ],
   },
+  js.configs.recommended,
+  ...typescriptConfigs,
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     files: [
-      "*.config.js",
-      "*.config.cjs",
-      "*.config.mjs",
+      "*.config.{js,cjs,mjs,ts}",
       "postcss.config.*",
       "next.config.*",
+      "scripts/**/*.{js,cjs,mjs,ts}",
     ],
-    languageOptions: {
-      sourceType: "module",
-      globals: nodeGlobals,
-    },
-    rules: {
-      "import/no-extraneous-dependencies": "off",
-    },
-  },
-  {
-    files: ["scripts/**/*.{js,cjs,mjs,ts}"],
     languageOptions: {
       sourceType: "module",
       globals: nodeGlobals,
@@ -62,4 +58,4 @@ const eslintConfig = [
   ...storybook.configs["flat/recommended"],
 ];
 
-export default eslintConfig;
+export default config;

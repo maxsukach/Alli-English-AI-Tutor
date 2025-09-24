@@ -116,8 +116,8 @@ export default function DashboardShell({ children }: DashboardShellProps) {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button asChild size="sm" color="secondary">
-              <Link href="/">Go to app</Link>
+            <Button size="sm" color="secondary" href="/">
+              Go to app
             </Button>
             <ThemeToggle />
             <div className="flex size-9 items-center justify-center rounded-full border border-secondary bg-primary text-sm font-semibold text-secondary">
