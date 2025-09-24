@@ -1,6 +1,29 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-
+import type { Decorator } from "@storybook/react";
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { PathnameContext, SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { MetricsTable } from "@/components/dashboard/MetricsTable";
+
+const mockRouter: AppRouterInstance = {
+  back: () => {},
+  forward: () => {},
+  refresh: () => {},
+  hmrRefresh: () => {},
+  push: () => {},
+  replace: () => {},
+  prefetch: () => {},
+};
+
+const RouterDecorator: Decorator = (Story) => (
+  <AppRouterContext.Provider value={mockRouter}>
+    <PathnameContext.Provider value="/dashboard">
+      <SearchParamsContext.Provider value={new URLSearchParams()}>
+        <Story />
+      </SearchParamsContext.Provider>
+    </PathnameContext.Provider>
+  </AppRouterContext.Provider>
+);
 
 const meta = {
   title: "Dashboard/MetricsTable",
@@ -9,6 +32,7 @@ const meta = {
     layout: "padded",
   },
   tags: ["autodocs"],
+  decorators: [RouterDecorator],
 } satisfies Meta<typeof MetricsTable>;
 
 export default meta;
