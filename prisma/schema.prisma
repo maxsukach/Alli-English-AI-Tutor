@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Prisma schema for Angie Tutor domain as defined in docs/angie-architecture.md
+// The schema models the core learning, adaptation, and knowledge base entities
+// so the application code can follow the documented architecture layers.
 
 generator client {
   provider = "prisma-client-js"
@@ -12,4 +10,246 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum ErrorType {
+  PHON // pronunciation
+  GRAM // grammar
+  LEX  // lexis
+}
+
+enum SrsItemType {
+  WORD
+  PATTERN
+}
+
+enum AdaptAction {
+  ADVANCE
+  REPEAT
+  REMEDIATE
+}
+
+enum TaskKind {
+  DIALOGUE
+  MODELING
+  ROLEPLAY
+  FORMATIVE
+  SRS
+  EXTENSION
+}
+
+model Profile {
+  id             String         @id @default(cuid())
+  userId         String         @unique
+  name           String?
+  email          String?
+  cefrRange      String?
+  goals          String?
+  interests      String?
+  nativeLanguage String?
+  preferences    Json?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  lessonRuns     LessonRun[]
+  errorLogs      ErrorLog[]
+  srsQueue       SrsQueue[]
+  abilities      AdaptiveAbility[]
+  media          Media[]
+  events         Event[]
+
+  @@index([cefrRange])
+}
+
+model LessonTemplate {
+  id          String      @id @default(cuid())
+  cefr        String
+  topic       String
+  stages      Json        // structured stage definitions
+  rubricRefs  String[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  taskTemplates TaskTemplate[]
+}
+
+model TaskTemplate {
+  id          String          @id @default(cuid())
+  templateKey String          @unique
+  kind        TaskKind
+  inputs      Json
+  kbRefs      String[]
+  minCefr     String
+  maxCefr     String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  lessonTemplateId String?
+  lessonTemplate   LessonTemplate? @relation(fields: [lessonTemplateId], references: [id])
+
+  taskDifficulties TaskDifficulty[]
+}
+
+model LessonPlan {
+  id        String    @id @default(cuid())
+  lessonId  String    @unique
+  userId    String
+  plan      Json
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  lessonRun LessonRun?
+  @@index([userId, createdAt])
+}
+
+model LessonRun {
+  id               String         @id @default(cuid())
+  lessonId         String         @unique
+  profileId        String
+  targetStructures String[]
+  targetVocab      String[]
+  feedbackJson     Json?
+  audioRef         String?
+  startedAt        DateTime       @default(now())
+  endedAt          DateTime?
+  metadata         Json?
+
+  profile          Profile        @relation(fields: [profileId], references: [id])
+  lessonPlan       LessonPlan?    @relation(fields: [lessonId], references: [lessonId])
+  errorLogs        ErrorLog[]
+  adaptiveEvents   AdaptiveEvent[]
+  media            Media[]
+  events           Event[]
+
+  @@index([profileId])
+}
+
+model ErrorLog {
+  id         String    @id @default(cuid())
+  profileId  String
+  lessonRunId String?
+  errorType  ErrorType
+  snippet    String
+  correction String
+  severity   Int
+  occurredAt DateTime  @default(now())
+
+  profile    Profile   @relation(fields: [profileId], references: [id])
+  lessonRun  LessonRun? @relation(fields: [lessonRunId], references: [id])
+
+  @@index([profileId, occurredAt])
+  @@index([lessonRunId])
+}
+
+model SrsQueue {
+  id        String      @id @default(cuid())
+  profileId String
+  itemId    String
+  itemType  SrsItemType
+  dueAt     DateTime
+  ease      Float
+  interval  Int
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  profile   Profile     @relation(fields: [profileId], references: [id])
+  @@unique([profileId, itemId, itemType])
+  @@index([profileId, dueAt])
+}
+
+model AdaptiveAbility {
+  id        String     @id @default(cuid())
+  profileId String
+  skillId   String
+  theta     Float      // ability level
+  sigma     Float      // uncertainty
+  updatedAt DateTime   @updatedAt
+  createdAt DateTime   @default(now())
+
+  profile   Profile    @relation(fields: [profileId], references: [id])
+  @@unique([profileId, skillId])
+}
+
+model AdaptiveEvent {
+  id          String      @id @default(cuid())
+  lessonRunId String
+  stageId     String
+  action      AdaptAction
+  decisionJson Json
+  abilityBefore Json?
+  abilityAfter  Json?
+  signals      Json
+  createdAt    DateTime    @default(now())
+
+  lessonRun    LessonRun   @relation(fields: [lessonRunId], references: [id])
+
+  @@index([lessonRunId])
+}
+
+model TaskDifficulty {
+  id           String       @id @default(cuid())
+  taskTemplateId String
+  skillId      String
+  beta         Float
+  discrimination Float
+  source       String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  taskTemplate TaskTemplate @relation(fields: [taskTemplateId], references: [id])
+  @@unique([taskTemplateId, skillId])
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  profileId   String?
+  lessonRunId String?
+  eventName   String
+  props       Json
+  recordedAt  DateTime  @default(now())
+
+  profile   Profile?  @relation(fields: [profileId], references: [id])
+  lessonRun LessonRun? @relation(fields: [lessonRunId], references: [id])
+
+  @@index([profileId, recordedAt])
+  @@index([eventName])
+}
+
+model KbDoc {
+  id          String    @id @default(cuid())
+  externalRef String    @unique
+  cefr        String?
+  topic       String?
+  kind        String?
+  content     Json
+  embedding   Bytes?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([cefr])
+  @@index([topic])
+}
+
+model Media {
+  id         String     @id @default(cuid())
+  lessonRunId String?
+  profileId  String?
+  kind       String
+  uri        String
+  metadata   Json?
+  createdAt  DateTime   @default(now())
+
+  lessonRun  LessonRun? @relation(fields: [lessonRunId], references: [id])
+  profile    Profile?   @relation(fields: [profileId], references: [id])
+
+  @@index([profileId, createdAt])
+}
+
+model DeploymentLog {
+  id        String   @id @default(cuid())
+  environment String
+  commitHash String
+  status     String
+  metadata   Json?
+  createdAt  DateTime @default(now())
 }

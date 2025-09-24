@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import SignupDemoClient from "@/components/untitled/SignupDemoClient";
 import { subscribeAction } from "./actions/subscribe";
-import { useState } from 'react';
+import { useState } from "react";
 
 export default function Home() {
   const [status, setStatus] = useState<string | null>(null);
@@ -44,6 +45,19 @@ export default function Home() {
 
       {/* Демо блок Untitled UI, рендериться з клієнтського врапера */}
       <SignupDemoClient />
+
+      <section className="max-w-xl">
+        <h2 className="text-lg font-semibold mb-2">Architecture Playground</h2>
+        <p className="text-sm text-muted-foreground mb-3">
+          Explore the Planner → Orchestrator → Adaptive Engine flow outlined in <code>docs/angie-architecture.md</code>.
+        </p>
+        <Link
+          href="/lesson"
+          className="inline-flex items-center rounded bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+        >
+          Open Lesson Playground
+        </Link>
+      </section>
     </main>
   );
 }
