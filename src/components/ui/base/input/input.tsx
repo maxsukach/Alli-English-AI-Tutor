@@ -50,6 +50,7 @@ export const InputBase = ({
     inputClassName,
     iconClassName,
     // Omit this prop to avoid invalid HTML attribute warning
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     isRequired: _isRequired,
     ...inputProps
 }: Omit<InputBaseProps, "label" | "hint">) => {

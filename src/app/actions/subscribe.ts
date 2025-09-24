@@ -1,6 +1,5 @@
 "use server";
 
-import { getSupabaseServer } from '@/lib/supabaseServer';
 import { createClient } from '@supabase/supabase-js';
 
 type Result = {

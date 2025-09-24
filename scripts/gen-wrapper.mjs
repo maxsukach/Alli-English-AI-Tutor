@@ -1,18 +1,10 @@
 #!/usr/bin/env node
 import fs from "fs";
 import path from "path";
-import url from "url";
 
 // --- helpers ---
-const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
 function ensureRel(p) {
   return p.replace(/^\.?\//, "");
-}
-function toPascalCase(s) {
-  return s
-    .replace(/[_\-./]+(.)/g, (_, c) => c.toUpperCase())
-    .replace(/^[a-z]/, (c) => c.toUpperCase());
 }
 function guessSlug(s) {
   return s
