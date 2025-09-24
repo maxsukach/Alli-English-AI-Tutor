@@ -1,10 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ??
+  process.env.SUPABASE_ANON_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Do not create the client at module load time if env vars are missing; provide a
-// lazy getter so the server action can handle missing configuration gracefully.
 type SupabaseStub = {
   from: (table: string) => {
     insert: (row: unknown) => {
@@ -13,21 +16,35 @@ type SupabaseStub = {
   };
 };
 
-export function getSupabaseServer(): ReturnType<typeof createClient> | SupabaseStub {
+export async function getSupabaseServer(): Promise<SupabaseClient | SupabaseStub> {
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase environment variables are not set. Server actions will fail until configured.');
-    // Return a minimal stub with a `from` method that returns an error-like object
+    console.warn("Supabase environment variables are not set. Server calls will fail until configured.");
     return {
       from: () => ({
         insert: () => ({
-          select: async () => ({ error: new Error('Supabase not configured'), data: null }),
+          select: async () => ({ error: new Error("Supabase not configured"), data: null }),
         }),
       }),
     };
   }
 
-  return createClient(supabaseUrl, supabaseAnonKey, {
-    auth: { persistSession: false },
+  const cookieStore = await cookies();
+
+  return createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        return cookieStore.get(name)?.value;
+      },
+      set() {
+        return;
+      },
+      remove() {
+        return;
+      },
+    },
+    auth: {
+      persistSession: false,
+    },
   });
 }
 

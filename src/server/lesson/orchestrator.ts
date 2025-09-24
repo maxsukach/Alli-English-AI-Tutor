@@ -2,7 +2,7 @@ import type { PlannerInput, LessonContext, OrchestratorResult, LessonPlanContrac
 import { LessonPlanner } from "./planner";
 import { AdaptiveEngine } from "./adaptive-engine";
 import { PolicyEngine } from "./policy-engine";
-import { AiCoreClient } from "./ai-core-client";
+import { AiCoreService } from "@/server/services/ai-core";
 import { RagRepository } from "./rag-repository";
 import { PronunciationService } from "./pronunciation-service";
 import { SrsScheduler } from "./srs-scheduler";
@@ -30,7 +30,7 @@ export class LessonOrchestrator {
     private readonly planner = new LessonPlanner(),
     private readonly adaptive = new AdaptiveEngine(),
     private readonly policy = new PolicyEngine(),
-    private readonly ai = new AiCoreClient(),
+    private readonly ai = new AiCoreService(),
     private readonly rag = new RagRepository(),
     private readonly pronunciation = new PronunciationService(),
     private readonly srs = new SrsScheduler(),
@@ -161,5 +161,9 @@ export class LessonOrchestrator {
       stages: partial.stages ?? [],
       branching: partial.branching,
     };
+  }
+
+  async createRealtimeSession() {
+    return this.ai.createRealtimeSession();
   }
 }

@@ -3,12 +3,34 @@
 import { useEffect, useMemo, useState } from "react";
 import type { LessonPlanContract, OrchestratorResult } from "@/server/lesson/contracts";
 
-const PROFILE_ID = "demo-profile";
+type ProfileSummary = {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  cefrRange?: string | null;
+  isDemo: boolean;
+  supabaseUserId?: string | null;
+};
+
+type StartLessonResponse = {
+  plan: LessonPlanContract;
+  profile: ProfileSummary;
+  isDemo: boolean;
+  supabaseUserId?: string | null;
+};
+
+type LessonTurnResponse = {
+  result: OrchestratorResult;
+  profile: ProfileSummary;
+  isDemo: boolean;
+  supabaseUserId?: string | null;
+};
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify(body),
   });
   if (!response.ok) {
@@ -22,8 +44,10 @@ export function LessonPlayground() {
   const [currentStageId, setCurrentStageId] = useState<string | null>(null);
   const [transcript, setTranscript] = useState("");
   const [result, setResult] = useState<OrchestratorResult | null>(null);
+  const [profile, setProfile] = useState<ProfileSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDemo, setIsDemo] = useState<boolean>(true);
 
   useEffect(() => {
     startLesson();
@@ -35,14 +59,15 @@ export function LessonPlayground() {
     setLoading(true);
     setError(null);
     try {
-      const newPlan = await postJson<LessonPlanContract>("/api/lesson/start", {
-        profileId: PROFILE_ID,
+      const response = await postJson<StartLessonResponse>("/api/lesson/start", {
         preferredTopics: ["travel_a2"],
       });
-      setPlan(newPlan);
-      setCurrentStageId(newPlan.stages[0]?.id ?? null);
+      setPlan(response.plan);
+      setCurrentStageId(response.plan.stages[0]?.id ?? null);
       setResult(null);
       setTranscript("");
+      setProfile({ ...response.profile, isDemo: response.isDemo, supabaseUserId: response.supabaseUserId });
+      setIsDemo(response.isDemo);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -55,8 +80,7 @@ export function LessonPlayground() {
     setLoading(true);
     setError(null);
     try {
-      const turnResult = await postJson<OrchestratorResult>("/api/lesson/turn", {
-        profileId: PROFILE_ID,
+      const turnResponse = await postJson<LessonTurnResponse>("/api/lesson/turn", {
         lessonId: plan.lessonId,
         stageId: currentStageId,
         transcript,
@@ -66,10 +90,12 @@ export function LessonPlayground() {
           conf: 2,
         },
       });
-      setResult(turnResult);
-      setPlan(turnResult.plan);
-      setCurrentStageId(turnResult.adaptiveDecision.nextTask?.id ?? turnResult.task.stageId);
+      setResult(turnResponse.result);
+      setPlan(turnResponse.result.plan);
+      setCurrentStageId(turnResponse.result.adaptiveDecision.nextTask?.id ?? turnResponse.result.task.stageId);
       setTranscript("");
+      setProfile({ ...turnResponse.profile, isDemo: turnResponse.isDemo, supabaseUserId: turnResponse.supabaseUserId });
+      setIsDemo(turnResponse.isDemo);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -82,6 +108,17 @@ export function LessonPlayground() {
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">Angie Lesson Orchestrator Playground</h1>
         <p className="text-sm text-muted-foreground">Simulate a lesson turn across Planner → Adaptive → AI Core → SRS as defined in the architecture doc.</p>
+        {profile && (
+          <div className="rounded border border-emerald-600/40 bg-emerald-500/10 px-3 py-2 text-xs">
+            <div className="flex flex-col gap-1">
+              <span>
+                Profile: <span className="font-mono">{profile.name ?? "(unnamed)"}</span> ({profile.id})
+              </span>
+              <span>CEFR: {profile.cefrRange ?? "unknown"} · Mode: {isDemo ? "Demo" : "Supabase"}</span>
+              {profile.supabaseUserId && <span>Supabase UID: {profile.supabaseUserId}</span>}
+            </div>
+          </div>
+        )}
       </header>
 
       <section className="grid gap-4 md:grid-cols-2">
